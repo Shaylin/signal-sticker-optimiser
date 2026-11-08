@@ -4,4 +4,5 @@ export interface StickerStats {
   height: number;
   durationSeconds: number;
   animated: boolean;
+  hasAlpha: boolean;
 }

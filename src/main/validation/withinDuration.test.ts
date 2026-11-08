@@ -3,7 +3,7 @@ import type { StickerStats } from "../pack/stickerStats";
 import { MAX_ANIMATION_SECONDS, withinDuration } from "./withinDuration";
 
 function statsWithDuration(durationSeconds: number): StickerStats {
-  return { byteSize: 1000, width: 512, height: 512, durationSeconds, animated: true };
+  return { byteSize: 1000, width: 512, height: 512, durationSeconds, animated: true, hasAlpha: false };
 }
 
 describe("withinDuration", () => {

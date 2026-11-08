@@ -3,7 +3,7 @@ import type { StickerStats } from "../pack/stickerStats";
 import { isSquare } from "./isSquare";
 
 function statsWithDimensions(width: number, height: number): StickerStats {
-  return { byteSize: 1000, width, height, durationSeconds: 1, animated: false };
+  return { byteSize: 1000, width, height, durationSeconds: 1, animated: false, hasAlpha: false };
 }
 
 describe("isSquare", () => {

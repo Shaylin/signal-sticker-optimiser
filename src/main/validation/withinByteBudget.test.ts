@@ -3,7 +3,7 @@ import type { StickerStats } from "../pack/stickerStats";
 import { MAX_STICKER_BYTES, withinByteBudget } from "./withinByteBudget";
 
 function statsWithBytes(byteSize: number): StickerStats {
-  return { byteSize, width: 512, height: 512, durationSeconds: 1, animated: false };
+  return { byteSize, width: 512, height: 512, durationSeconds: 1, animated: false, hasAlpha: false };
 }
 
 describe("withinByteBudget", () => {

@@ -10,6 +10,7 @@ export async function readImageStats(filePath: string): Promise<StickerStats> {
     width: metadata.width ?? 0,
     height: metadata.height ?? 0,
     durationSeconds: 0,
-    animated: pages > 1
+    animated: pages > 1,
+    hasAlpha: metadata.hasAlpha ?? false
   };
 }

@@ -12,7 +12,8 @@ export async function probeStats(filePath: string, ffmpegPath: string): Promise<
     byteSize: fileStat.size,
     ...parseVideoStream(result.stderr),
     durationSeconds: parseDuration(result.stderr) ?? parseFinalTime(result.stderr),
-    animated: frames > 1
+    animated: frames > 1,
+    hasAlpha: /Video:[^\n]*yuva/.test(result.stderr)
   };
 }
 

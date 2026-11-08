@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "22"
+  NODE_VERSION: "26"
 
 jobs:
   check:
@@ -24,8 +24,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+      - name: Cache Electron downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/electron
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-electron-
       - run: npm ci
-      - name: Check that the install scripts ran
+      # Electron 42+ has no install script: the binary is fetched on demand, so ask for it here
+      - name: Download the Electron binary
+        run: npx install-electron
+      - name: Check that the binaries are in place
         shell: bash
         run: test -x node_modules/electron/dist/electron && test -f node_modules/ffmpeg-static/ffmpeg
       - run: npm run lint

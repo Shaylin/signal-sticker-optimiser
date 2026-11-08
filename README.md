@@ -34,8 +34,10 @@ itself never reaches the network.
 Other commands: `npm test` runs the unit and corpus tests, `npm run lint` the
 linter, `npm run build` the bundling step on its own.
 
-If your npm blocks install scripts, allow them for `electron` and `ffmpeg-static`,
-otherwise the Electron and ffmpeg binaries are not downloaded at install time.
+npm 11 and newer only run install scripts you have approved, so `package.json` approves
+`ffmpeg-static`; without that entry its binary is never downloaded. Electron 42 and newer
+have no install script at all — their binary is fetched the first time `npm run dev`,
+`npm run dist` or `npx electron` runs, or earlier with `npx install-electron`.
 
 ## Using the app
 

@@ -1,7 +1,8 @@
 {
   "name": "signal-sticker-studio",
+  "productName": "Signal Sticker Optimiser",
   "version": "0.1.0",
-  "description": "Offline studio for converting images and animations into Signal sticker packs",
+  "description": "Offline converter for turning images and animations into Signal-compliant sticker packs",
   "license": "MIT",
   "author": "",
   "type": "module",
@@ -14,6 +15,7 @@
     "build": "electron-vite build",
     "test": "vitest run",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "format": "prettier --write .",
     "dist": "electron-vite build && electron-builder"
   },

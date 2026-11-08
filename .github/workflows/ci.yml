@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Check that the install scripts ran
+        shell: bash
+        run: test -x node_modules/electron/dist/electron && test -f node_modules/ffmpeg-static/ffmpeg
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  package:
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux
+            os: ubuntu-latest
+            builder: --linux
+            unpacked: linux-unpacked
+            ffmpeg: ffmpeg
+          - label: Windows
+            os: windows-latest
+            builder: --win
+            unpacked: win-unpacked
+            ffmpeg: ffmpeg.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Cache Electron downloads
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/AppData/Local/electron/Cache
+            ~/AppData/Local/electron-builder/Cache
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-electron-
+      - run: npm ci
+      - name: Cache the segmentation assets
+        uses: actions/cache@v6
+        with:
+          path: resources/onnx
+          key: ${{ runner.os }}-onnx-${{ hashFiles('package-lock.json') }}
+      - name: Fetch the segmentation assets
+        run: node scripts/fetch-segmentation-assets.mjs
+      - name: Check the segmentation assets
+        shell: bash
+        run: test -f resources/onnx/resources.json
+      - name: Bundle the app
+        run: npx electron-vite build
+      - name: Package ${{ matrix.label }}
+        run: npx electron-builder ${{ matrix.builder }} --publish never
+      - name: Check the bundled ffmpeg
+        shell: bash
+        run: test -f "dist/${{ matrix.unpacked }}/resources/${{ matrix.ffmpeg }}"

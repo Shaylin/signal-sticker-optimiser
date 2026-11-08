@@ -1,5 +1,5 @@
 appId: studio.signal.sticker
-productName: Signal Sticker Studio
+productName: Signal Sticker Optimiser
 copyright: MIT
 
 directories:
@@ -22,8 +22,6 @@ asarUnpack:
   - "**/node_modules/ffmpeg-static/**"
 
 extraResources:
-  - from: node_modules/ffmpeg-static/ffmpeg
-    to: ffmpeg
   - from: resources/onnx
     to: onnx
     filter:
@@ -33,12 +31,24 @@ linux:
   target:
     - AppImage
   category: Graphics
-  maintainer: Signal Sticker Studio
+  maintainer: Signal Sticker Optimiser
+  artifactName: signal-sticker-optimiser-${version}-linux-${arch}.${ext}
+  extraResources:
+    # ffmpeg-static names the binary after the host platform, so each platform copies its own
+    - from: node_modules/ffmpeg-static/ffmpeg
+      to: ffmpeg
 
 win:
   target:
     - nsis
+  artifactName: signal-sticker-optimiser-${version}-win-${arch}-setup.${ext}
+  extraResources:
+    - from: node_modules/ffmpeg-static/ffmpeg.exe
+      to: ffmpeg.exe
 
 mac:
   target:
     - dmg
+  extraResources:
+    - from: node_modules/ffmpeg-static/ffmpeg
+      to: ffmpeg

@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  build:
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux
+            os: ubuntu-latest
+            builder: --linux
+            artifact: dist/*.AppImage
+          - label: Windows
+            os: windows-latest
+            builder: --win
+            artifact: dist/*.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Cache Electron downloads
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/AppData/Local/electron/Cache
+            ~/AppData/Local/electron-builder/Cache
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-electron-
+      - run: npm ci
+      - name: Cache the segmentation assets
+        uses: actions/cache@v6
+        with:
+          path: resources/onnx
+          key: ${{ runner.os }}-onnx-${{ hashFiles('package-lock.json') }}
+      - name: Fetch the segmentation assets
+        run: node scripts/fetch-segmentation-assets.mjs
+      - name: Check the segmentation assets
+        shell: bash
+        run: test -f resources/onnx/resources.json
+      - name: Resolve the app version
+        id: version
+        shell: bash
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [ -n "$TAG" ]; then
+            printf 'value=%s\n' "${TAG#v}" >> "$GITHUB_OUTPUT"
+          else
+            printf 'value=%s\n' "$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Bundle the app
+        run: npx electron-vite build
+      - name: Package ${{ matrix.label }}
+        run: npx electron-builder ${{ matrix.builder }} --publish never -c.extraMetadata.version=${{ steps.version.outputs.value }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.label }} installer
+          path: ${{ matrix.artifact }}
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: "* installer"
+          merge-multiple: true
+          path: release-assets
+      - name: Build checksums
+        run: cd release-assets && sha256sum ./* > SHA256SUMS.txt
+      - name: Attach the installers to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" release-assets/* --clobber

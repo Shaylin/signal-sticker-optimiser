@@ -1,45 +1,34 @@
 import { useState } from "react";
 import type { SegmentationModel } from "./segmentation/segmentationModelToOnnx";
+import { NotificationList } from "./NotificationList";
 import { PackPanel } from "./PackPanel";
-import { StickerTile } from "./StickerTile";
+import { StickerGrid } from "./StickerGrid";
 import { usePackActions } from "./usePackActions";
 
 export function App(): React.JSX.Element {
   const [segmentationModel, setSegmentationModel] = useState<SegmentationModel>("small");
   const actions = usePackActions();
-  const pack = actions.pack;
 
   return (
     <main>
       <header>
         <h1>Signal Sticker Studio</h1>
         <PackPanel
-          pack={pack}
+          pack={actions.pack}
           segmentationModel={segmentationModel}
           onSegmentationModelChange={setSegmentationModel}
           onImportFiles={actions.importFiles}
           onImportFolder={actions.importFolder}
-          onPackInfoChange={actions.setPackInfo}
+          onExportPack={actions.exportPack}
         />
       </header>
-      <section className="grid">
-        {(pack?.stickers ?? []).map((sticker) => (
-          <StickerTile
-            key={sticker.id}
-            sticker={sticker}
-            isCover={pack?.coverStickerId === sticker.id}
-            busy={actions.busyStickerId === sticker.id}
-            actions={{
-              optimise: () => actions.optimise(sticker.id),
-              resize: (size) => actions.resize(sticker.id, size),
-              removeBackground: () => actions.removeBackground(sticker.id, segmentationModel),
-              remove: () => actions.remove(sticker.id),
-              setEmoji: (emoji) => actions.setEmoji(sticker.id, emoji),
-              toggleCover: () => actions.setCover(pack?.coverStickerId === sticker.id ? null : sticker.id)
-            }}
-          />
-        ))}
-      </section>
+      <StickerGrid
+        pack={actions.pack}
+        busyStickerId={actions.busyStickerId}
+        segmentationModel={segmentationModel}
+        actions={actions}
+      />
+      <NotificationList notifications={actions.notifications} onDismiss={actions.dismissNotification} />
     </main>
   );
 }

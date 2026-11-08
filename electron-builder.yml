@@ -1,0 +1,44 @@
+appId: studio.signal.sticker
+productName: Signal Sticker Studio
+copyright: MIT
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - "!**/.vscode/*"
+  - "!src/*"
+  - "!scripts/*"
+  - "!test/*"
+  - "!plans/*"
+  - "!examples/*"
+  - "!{tsconfig.json,vitest.config.ts,eslint.config.mjs,.prettierrc*}"
+  - "!resources/**"
+
+asarUnpack:
+  - "**/node_modules/sharp/**"
+  - "**/node_modules/@img/**"
+  - "**/node_modules/ffmpeg-static/**"
+
+extraResources:
+  - from: node_modules/ffmpeg-static/ffmpeg
+    to: ffmpeg
+  - from: resources/onnx
+    to: onnx
+    filter:
+      - "**/*"
+
+linux:
+  target:
+    - AppImage
+  category: Graphics
+  maintainer: Signal Sticker Studio
+
+win:
+  target:
+    - nsis
+
+mac:
+  target:
+    - dmg

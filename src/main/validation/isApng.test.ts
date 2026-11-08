@@ -29,11 +29,7 @@ describe("isApng", () => {
   it("accepts a png containing an acTL chunk", () => {
     const actl = Buffer.alloc(8);
     actl.writeUInt32BE(2, 0);
-    const synthetic = Buffer.concat([
-      PNG_SIGNATURE,
-      pngChunk("acTL", actl),
-      pngChunk("IEND", Buffer.alloc(0))
-    ]);
+    const synthetic = Buffer.concat([PNG_SIGNATURE, pngChunk("acTL", actl), pngChunk("IEND", Buffer.alloc(0))]);
     expect(isApng(synthetic)).toBe(true);
   });
 

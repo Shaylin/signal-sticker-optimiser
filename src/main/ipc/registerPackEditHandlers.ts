@@ -8,22 +8,4 @@ export function registerPackEditHandlers(): void {
     packStore.removeSticker(stickerId);
     return packToDto(packStore.state);
   });
-
-  ipcMain.handle(IpcChannels.setStickerEmoji, (_event, stickerId: string, emoji: string) => {
-    const sticker = packStore.findSticker(stickerId);
-    if (sticker) {
-      sticker.emoji = emoji;
-    }
-    return packToDto(packStore.state);
-  });
-
-  ipcMain.handle(IpcChannels.setPackInfo, (_event, title: string, author: string) => {
-    packStore.setPackInfo(title, author);
-    return packToDto(packStore.state);
-  });
-
-  ipcMain.handle(IpcChannels.setCoverSticker, (_event, stickerId: string | null) => {
-    packStore.setCoverSticker(stickerId);
-    return packToDto(packStore.state);
-  });
 }

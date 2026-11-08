@@ -1,54 +1,52 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { PackDto, StudioApi } from "../shared/studioApi";
+import type { Notification } from "./notification";
+import { describeFailure } from "./describeFailure";
 import type { SegmentationModel } from "./segmentation/segmentationModelToOnnx";
 import { useBackgroundRemoval } from "./useBackgroundRemoval";
+import { useNotifications } from "./useNotifications";
+import { usePackExport } from "./usePackExport";
+import { usePackMutation } from "./usePackMutation";
 
 export interface PackActions {
   pack: PackDto | null;
   busyStickerId: string | null;
+  notifications: Notification[];
+  dismissNotification: (notificationId: number) => void;
   importFiles: () => Promise<void>;
   importFolder: () => Promise<void>;
+  exportPack: () => Promise<void>;
   optimise: (stickerId: string) => Promise<void>;
   resize: (stickerId: string, canvasSize: number) => Promise<void>;
   remove: (stickerId: string) => Promise<void>;
-  setEmoji: (stickerId: string, emoji: string) => Promise<void>;
-  setPackInfo: (title: string, author: string) => Promise<void>;
-  setCover: (stickerId: string | null) => Promise<void>;
   removeBackground: (stickerId: string, model: SegmentationModel) => Promise<void>;
 }
 
 export function usePackActions(): PackActions {
   const studio: StudioApi = window.studio;
   const [pack, setPack] = useState<PackDto | null>(null);
-  const [busyStickerId, setBusyStickerId] = useState<string | null>(null);
+  const { notifications, notify, dismiss } = useNotifications();
+  const { busyStickerId, applyMutation } = usePackMutation(setPack, notify);
+  const exportPack = usePackExport(studio, notify);
 
   useEffect(() => {
-    studio.getPack().then(setPack);
-  }, [studio]);
-
-  const applyBusy = useCallback(
-    async (stickerId: string | null, action: () => Promise<PackDto>): Promise<void> => {
-      setBusyStickerId(stickerId);
-      try {
-        setPack(await action());
-      } finally {
-        setBusyStickerId(null);
-      }
-    },
-    []
-  );
+    studio
+      .getPack()
+      .then(setPack)
+      .catch((error: unknown) => notify("error", describeFailure(error)));
+  }, [studio, notify]);
 
   return {
     pack,
     busyStickerId,
-    importFiles: () => applyBusy(null, studio.importViaFilePicker),
-    importFolder: () => applyBusy(null, studio.importViaFolderPicker),
-    optimise: (stickerId) => applyBusy(stickerId, () => studio.optimiseSticker(stickerId)),
-    resize: (stickerId, size) => applyBusy(stickerId, () => studio.resizeSticker(stickerId, size)),
-    remove: (stickerId) => applyBusy(stickerId, () => studio.removeSticker(stickerId)),
-    setEmoji: (stickerId, emoji) => applyBusy(stickerId, () => studio.setStickerEmoji(stickerId, emoji)),
-    setPackInfo: (title, author) => applyBusy(null, () => studio.setPackInfo(title, author)),
-    setCover: (stickerId) => applyBusy(null, () => studio.setCoverSticker(stickerId)),
-    removeBackground: useBackgroundRemoval(studio, applyBusy)
+    notifications,
+    dismissNotification: dismiss,
+    importFiles: () => applyMutation(null, studio.importViaFilePicker),
+    importFolder: () => applyMutation(null, studio.importViaFolderPicker),
+    exportPack,
+    optimise: (stickerId) => applyMutation(stickerId, () => studio.optimiseSticker(stickerId)),
+    resize: (stickerId, size) => applyMutation(stickerId, () => studio.resizeSticker(stickerId, size)),
+    remove: (stickerId) => applyMutation(stickerId, () => studio.removeSticker(stickerId)),
+    removeBackground: useBackgroundRemoval(studio, applyMutation)
   };
 }

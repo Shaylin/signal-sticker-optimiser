@@ -9,13 +9,11 @@ const studioApi: StudioApi = {
   importViaFolderPicker: () => ipcRenderer.invoke(IpcChannels.importViaFolderPicker),
   importPaths: (paths) => ipcRenderer.invoke(IpcChannels.importPaths, paths),
   removeSticker: (stickerId) => ipcRenderer.invoke(IpcChannels.removeSticker, stickerId),
-  setStickerEmoji: (stickerId, emoji) => ipcRenderer.invoke(IpcChannels.setStickerEmoji, stickerId, emoji),
   optimiseSticker: (stickerId) => ipcRenderer.invoke(IpcChannels.optimiseSticker, stickerId),
   resizeSticker: (stickerId, canvasSize) => ipcRenderer.invoke(IpcChannels.resizeSticker, stickerId, canvasSize),
   submitSegmentedStickerImage: (stickerId, pngBytes) =>
     ipcRenderer.invoke(IpcChannels.submitSegmentedStickerImage, stickerId, pngBytes),
-  setPackInfo: (title, author) => ipcRenderer.invoke(IpcChannels.setPackInfo, title, author),
-  setCoverSticker: (stickerId) => ipcRenderer.invoke(IpcChannels.setCoverSticker, stickerId),
+  exportViaFolderPicker: () => ipcRenderer.invoke(IpcChannels.exportViaFolderPicker),
   segmentationAssetBaseUrl
 };
 

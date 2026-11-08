@@ -5,3 +5,4 @@ plans/
 out/
 dist/
 resources/
+.vitest

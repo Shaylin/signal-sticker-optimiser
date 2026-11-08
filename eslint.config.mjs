@@ -21,7 +21,7 @@ export default tseslint.config(
   },
   {
     rules: {
-      quotes: ["error", "double"],
+      quotes: ["error", "double", { avoidEscape: true }],
       semi: ["error", "always"],
       "max-len": ["error", { code: 120 }],
       "no-nested-ternary": "error",

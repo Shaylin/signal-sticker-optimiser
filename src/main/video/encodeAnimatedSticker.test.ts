@@ -43,7 +43,9 @@ describe("encodeAnimatedSticker", () => {
   it("produces a transparent padded canvas for black-backed webm sources", async () => {
     const outputPath = join(tempDir, "padded.apng");
     await encodeAnimatedSticker(join(webmFixtures, "0.webm"), outputPath, resolveFfmpegPath());
-    const { data, info } = await sharp(await readFile(outputPath)).raw().toBuffer({ resolveWithObject: true });
+    const { data, info } = await sharp(await readFile(outputPath))
+      .raw()
+      .toBuffer({ resolveWithObject: true });
     const cornerAlpha = data[3];
     expect(cornerAlpha).toBe(0);
     expect(info.channels).toBeGreaterThanOrEqual(3);
@@ -55,12 +57,11 @@ describe("encodeAnimatedSticker budget behaviour", () => {
     const highPath = join(tempDir, "colors128.apng");
     const lowPath = join(tempDir, "colors32.apng");
     await encodeAnimatedSticker(join(webmFixtures, "9.webm"), highPath, resolveFfmpegPath(), DEFAULT_ANIMATED_SETTINGS);
-    await encodeAnimatedSticker(
-      join(webmFixtures, "9.webm"),
-      lowPath,
-      resolveFfmpegPath(),
-      { ...DEFAULT_ANIMATED_SETTINGS, maxColors: 32, dither: false }
-    );
+    await encodeAnimatedSticker(join(webmFixtures, "9.webm"), lowPath, resolveFfmpegPath(), {
+      ...DEFAULT_ANIMATED_SETTINGS,
+      maxColors: 32,
+      dither: false
+    });
     expect((await stat(lowPath)).size).toBeLessThan((await stat(highPath)).size);
   }, 60_000);
 });

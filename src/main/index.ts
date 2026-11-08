@@ -36,9 +36,7 @@ app.whenReady().then(async () => {
   await mkdir(workingDir, { recursive: true });
   packStore.configureWorkingDir(workingDir);
 
-  const assetsDir = app.isPackaged
-    ? join(process.resourcesPath, "onnx")
-    : join(app.getAppPath(), "resources", "onnx");
+  const assetsDir = app.isPackaged ? join(process.resourcesPath, "onnx") : join(app.getAppPath(), "resources", "onnx");
   registerSegmentationAssetsProtocol(assetsDir);
   registerIpcHandlers(resolveFfmpegPath());
 

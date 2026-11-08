@@ -16,7 +16,9 @@ async function checkerboard(): Promise<Buffer> {
       data[offset + 3] = 255;
     }
   }
-  return sharp(data, { raw: { width: size, height: size, channels } }).png().toBuffer();
+  return sharp(data, { raw: { width: size, height: size, channels } })
+    .png()
+    .toBuffer();
 }
 
 describe("encodeStaticSticker", () => {

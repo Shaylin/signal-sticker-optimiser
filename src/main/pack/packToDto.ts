@@ -5,9 +5,6 @@ import { basename } from "node:path";
 
 export function packToDto(state: PackState): PackDto {
   return {
-    title: state.title,
-    author: state.author,
-    coverStickerId: state.coverStickerId,
     stickers: state.stickers.map(stickerToDto)
   };
 }
@@ -17,7 +14,6 @@ function stickerToDto(sticker: Sticker): StickerDto {
     id: sticker.id,
     sourcePath: sticker.sourcePath,
     displayName: basename(sticker.sourcePath),
-    emoji: sticker.emoji,
     stats: sticker.stats,
     processedPath: sticker.processedPath,
     processedStats: sticker.processedStats,

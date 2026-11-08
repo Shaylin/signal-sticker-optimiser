@@ -49,7 +49,7 @@ async function createSticker(sourcePath: string, ffmpegPath: string): Promise<St
   const thumbnailDataUrl = await thumbnailForSource(sourcePath, packStore.state.workingDir, ffmpegPath);
   const processedPath = await encodeDefaultPreview(id, sourcePath, animated, ffmpegPath);
   const processedStats = animated ? await probeStats(processedPath, ffmpegPath) : await readImageStats(processedPath);
-  return { id, sourcePath, emoji: "", stats, processedPath, processedStats, thumbnailDataUrl };
+  return { id, sourcePath, stats, processedPath, processedStats, thumbnailDataUrl };
 }
 
 async function encodeDefaultPreview(

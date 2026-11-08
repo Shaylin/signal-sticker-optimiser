@@ -67,21 +67,23 @@ jobs:
       - name: Check the segmentation assets
         shell: bash
         run: test -f resources/onnx/resources.json
-      - name: Resolve the app version
-        id: version
+      # Set the version in package.json rather than passing -c.extraMetadata.version:
+      # PowerShell splits that argument, so electron-builder reads it as a config file path on Windows
+      - name: Apply the release version
         shell: bash
         env:
           TAG: ${{ github.event.release.tag_name }}
         run: |
           if [ -n "$TAG" ]; then
-            printf 'value=%s\n' "${TAG#v}" >> "$GITHUB_OUTPUT"
+            version="${TAG#v}"
           else
-            printf 'value=%s\n' "$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+            version="$(node -p "require('./package.json').version")"
           fi
+          npm version "$version" --no-git-tag-version --allow-same-version
       - name: Bundle the app
         run: npx electron-vite build
       - name: Package ${{ matrix.label }}
-        run: npx electron-builder ${{ matrix.builder }} --publish never -c.extraMetadata.version=${{ steps.version.outputs.value }}
+        run: npx electron-builder ${{ matrix.builder }} --publish never
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.label }} installer

@@ -1,7 +1,7 @@
 {
   "name": "signal-sticker-studio",
   "productName": "Signal Sticker Optimiser",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Offline converter for turning images and animations into Signal-compliant sticker packs",
   "license": "MIT",
   "author": "",

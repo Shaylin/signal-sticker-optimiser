@@ -5,5 +5,5 @@ plans/
 out/
 dist/
 resources/
-.vitest
+.vitest/
 examples/

@@ -4,6 +4,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Signal Sticker Studio</title>
+    <style>
+      body { font-family: system-ui, sans-serif; background: #16181d; color: #e6e6e6; margin: 0; }
+      main { padding: 16px; }
+      header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+      h1 { font-size: 1.2rem; margin: 0 12px 0 0; }
+      .pack-panel, .actions { display: flex; gap: 8px; align-items: center; }
+      input, select, button { background: #23262e; color: #e6e6e6; border: 1px solid #3a3f4b; border-radius: 6px; padding: 6px 10px; }
+      button { cursor: pointer; }
+      button.danger { border-color: #8a3a3a; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+      .tile { background: #1d2027; border: 1px solid #2c313b; border-radius: 10px; padding: 12px; }
+      .tile-head { display: flex; gap: 10px; align-items: center; }
+      .thumb { width: 72px; height: 72px; object-fit: contain; background: #0f1115; border-radius: 6px; }
+      .name { margin: 0 0 4px; font-size: 0.85rem; overflow-wrap: anywhere; }
+      .badge { padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
+      .badge-ok { background: #1f5b2c; color: #c7f3d0; }
+      .badge-over { background: #6b1f1f; color: #f7cfcf; }
+      .dims { font-size: 0.75rem; color: #9aa3b2; }
+      .tile-controls { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .tile-controls button, .tile-controls select, .emoji-input input { font-size: 0.8rem; padding: 4px 8px; }
+      .emoji-input { display: inline-flex; gap: 4px; }
+      .emoji-input input { width: 44px; text-align: center; }
+      .pack-count { color: #9aa3b2; font-size: 0.85rem; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

@@ -1,5 +1,7 @@
 .idea
 node_modules
 examples
-plansout/
+plans/
+out/
 dist/
+resources/

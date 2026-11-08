@@ -1,5 +1,14 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, protocol } from "electron";
+import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
+import { registerIpcHandlers } from "./ipc/registerIpcHandlers";
+import { registerSegmentationAssetsProtocol } from "./ipc/registerSegmentationAssetsProtocol";
+import { packStore } from "./pack/packStore";
+import { resolveFfmpegPath } from "./video/resolveFfmpegPath";
+
+protocol.registerSchemesAsPrivileged([
+  { scheme: "segmentation", privileges: { standard: true, secure: true, supportFetchAPI: true } }
+]);
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -22,7 +31,17 @@ function createWindow(): void {
   }
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  const workingDir = join(app.getPath("userData"), "sticker-work");
+  await mkdir(workingDir, { recursive: true });
+  packStore.configureWorkingDir(workingDir);
+
+  const assetsDir = app.isPackaged
+    ? join(process.resourcesPath, "onnx")
+    : join(app.getAppPath(), "resources", "onnx");
+  registerSegmentationAssetsProtocol(assetsDir);
+  registerIpcHandlers(resolveFfmpegPath());
+
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { corpusAvailable } from "../testing/corpusAvailable";
 import { isApng } from "../validation/isApng";
 import { MAX_STICKER_BYTES } from "../validation/withinByteBudget";
 import { MAX_STICKER_DIMENSION } from "../validation/withinDimensions";
@@ -12,6 +13,7 @@ import { probeStats } from "./probeStats";
 import { resolveFfmpegPath } from "./resolveFfmpegPath";
 
 const webmFixtures = join(import.meta.dirname, "../../../examples/webm");
+const webmReady = corpusAvailable(webmFixtures);
 
 let tempDir: string;
 
@@ -36,10 +38,12 @@ async function convertAndAssert(name: string): Promise<number> {
   expect(metadata.width, `${name} width`).toBeLessThanOrEqual(MAX_STICKER_DIMENSION);
   expect(metadata.width, `${name} square`).toBe(metadata.height);
   expect(stats.durationSeconds, `${name} duration`).toBeLessThanOrEqual(MAX_ANIMATION_SECONDS);
+  const transparency = await sharp(result.bytes).stats();
+  expect(transparency.channels[3].min, `${name} keeps transparent pixels`).toBeLessThan(255);
   return result.rungIndex;
 }
 
-describe("the whole webm corpus", () => {
+describe.skipIf(!webmReady)("the whole webm corpus", () => {
   it("converts all 24 fixtures to Signal-compliant APNGs via the budget ladder", async () => {
     const fixtureNames = (await readdir(webmFixtures)).filter((name) => name.endsWith(".webm"));
     expect(fixtureNames.length).toBe(24);

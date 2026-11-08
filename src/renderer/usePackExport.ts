@@ -1,13 +1,21 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import type { StudioApi } from "../shared/studioApi";
 import { describeFailure } from "./describeFailure";
 import type { NotificationKind } from "./notification";
 
+export interface PackExportState {
+  exportPack: () => Promise<void>;
+  isExporting: boolean;
+}
+
 export function usePackExport(
   studio: StudioApi,
   notify: (kind: NotificationKind, message: string) => void
-): () => Promise<void> {
-  return useCallback(async (): Promise<void> => {
+): PackExportState {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const exportPack = useCallback(async (): Promise<void> => {
+    setIsExporting(true);
     try {
       const exported = await studio.exportViaFolderPicker();
       const count = exported?.files.length ?? 0;
@@ -15,6 +23,10 @@ export function usePackExport(
       notify("info", message);
     } catch (error) {
       notify("error", describeFailure(error));
+    } finally {
+      setIsExporting(false);
     }
   }, [studio, notify]);
+
+  return { exportPack, isExporting };
 }

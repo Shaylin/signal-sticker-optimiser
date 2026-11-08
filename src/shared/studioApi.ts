@@ -19,6 +19,11 @@ export interface ExportedPackDto {
   files: string[];
 }
 
+export interface StickerSourceDto {
+  mimeType: string;
+  bytes: ArrayBuffer;
+}
+
 export interface StudioApi {
   getPack(): Promise<PackDto>;
   importViaFilePicker(): Promise<PackDto>;
@@ -28,7 +33,7 @@ export interface StudioApi {
   optimiseSticker(stickerId: string): Promise<PackDto>;
   resizeSticker(stickerId: string, canvasSize: number): Promise<PackDto>;
   submitSegmentedStickerImage(stickerId: string, pngBytes: ArrayBuffer): Promise<PackDto>;
-  getStickerSourceBytes(stickerId: string): Promise<ArrayBuffer>;
+  getStickerSource(stickerId: string): Promise<StickerSourceDto>;
   exportViaFolderPicker(): Promise<ExportedPackDto | null>;
   segmentationAssetBaseUrl: string;
 }

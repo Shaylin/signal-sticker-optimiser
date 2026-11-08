@@ -5,7 +5,7 @@ import { registerStickerDataHandlers } from "./registerStickerDataHandlers";
 import { registerStickerProcessingHandlers } from "./registerStickerProcessingHandlers";
 
 export function registerIpcHandlers(ffmpegPath: string): void {
-  registerStickerDataHandlers();
+  registerStickerDataHandlers(ffmpegPath);
   registerImportHandlers(ffmpegPath);
   registerPackEditHandlers();
   registerStickerProcessingHandlers(ffmpegPath);

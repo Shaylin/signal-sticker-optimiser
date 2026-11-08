@@ -1,23 +1,26 @@
 import { useCallback } from "react";
-import type { PackDto, StudioApi } from "../shared/studioApi";
+import type { StudioApi } from "../shared/studioApi";
 import { removeBackground as runSegmentation } from "./segmentation/removeBackground";
-import type { SegmentationModel } from "./segmentation/segmentationModelToOnnx";
+
+import type { PackMutation } from "./usePackMutation";
 
 export function useBackgroundRemoval(
   studio: StudioApi,
-  applyBusy: (stickerId: string | null, action: () => Promise<PackDto>) => Promise<void>
-): (stickerId: string, model: SegmentationModel) => Promise<void> {
+  applyMutation: PackMutation
+): (stickerId: string) => Promise<void> {
   return useCallback(
-    async (stickerId: string, model: SegmentationModel): Promise<void> => {
-      await applyBusy(stickerId, async () => {
-        const bytes = await studio.getStickerSourceBytes(stickerId);
-        const output = await runSegmentation(new Blob([bytes]), {
-          model,
-          assetBaseUrl: studio.segmentationAssetBaseUrl
-        });
-        return studio.submitSegmentedStickerImage(stickerId, await output.arrayBuffer());
-      });
+    async (stickerId: string): Promise<void> => {
+      await applyMutation(
+        stickerId,
+        async () => {
+          const source = await studio.getStickerSource(stickerId);
+          const image = new Blob([source.bytes], { type: source.mimeType });
+          const output = await runSegmentation(image, { assetBaseUrl: studio.segmentationAssetBaseUrl });
+          return studio.submitSegmentedStickerImage(stickerId, await output.arrayBuffer());
+        },
+        "Removing background…"
+      );
     },
-    [applyBusy, studio]
+    [applyMutation, studio]
   );
 }

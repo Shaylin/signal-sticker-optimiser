@@ -11,12 +11,7 @@ const packageJsonPath = join(projectRoot, "node_modules/@imgly/background-remova
 const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8"));
 const dataBaseUrl = `https://staticimgly.com/@imgly/background-removal-data/${packageJson.version}/dist/`;
 
-const requestedModel = process.argv[2] ?? "small";
-const onnxModelNames = { small: "isnet_quint8", medium: "isnet_fp16" };
-if (!(requestedModel in onnxModelNames)) {
-  console.error(`Usage: node scripts/fetch-segmentation-assets.mjs [${Object.keys(onnxModelNames).join("|")}]`);
-  process.exit(1);
-}
+const onnxModelName = "isnet_quint8";
 
 await mkdir(outputDir, { recursive: true });
 const manifest = JSON.parse(await downloadText(`${dataBaseUrl}resources.json`));
@@ -24,7 +19,7 @@ await writeFile(join(outputDir, "resources.json"), JSON.stringify(manifest, null
 console.log(`Fetched manifest with ${Object.keys(manifest).length} resources`);
 
 function keysToFetch() {
-  const modelKey = `/models/${onnxModelNames[requestedModel]}`;
+  const modelKey = `/models/${onnxModelName}`;
   const wasmKeys = Object.keys(manifest).filter((key) => key.startsWith("/onnxruntime-web/"));
   const missing = [modelKey, ...wasmKeys].filter((key) => !(key in manifest));
   if (missing.length > 0) {
@@ -85,5 +80,5 @@ for (const key of keysToFetch()) {
     console.log(`  ${key} ${Math.round((chunk.offsets[1] / manifest[key].size) * 100)}%`);
   }
 }
-const summary = `Segmentation assets ready in ${outputDir} (${fetched} of ${total} chunks, model: ${requestedModel})`;
+const summary = `Segmentation assets ready in ${outputDir} (${fetched} of ${total} chunks, model: ${onnxModelName})`;
 console.log(summary);

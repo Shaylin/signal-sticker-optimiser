@@ -18,7 +18,7 @@ export function registerStickerProcessingHandlers(ffmpegPath: string): void {
   });
 
   ipcMain.handle(IpcChannels.submitSegmentedStickerImage, async (_event, stickerId: string, pngBytes: ArrayBuffer) => {
-    await submitSegmentedStickerImage(stickerId, Buffer.from(pngBytes));
+    await submitSegmentedStickerImage(stickerId, Buffer.from(pngBytes), ffmpegPath);
     return packToDto(packStore.state);
   });
 }

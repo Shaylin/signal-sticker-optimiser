@@ -4,7 +4,7 @@ import type { PackDto, StudioApi } from "../shared/studioApi";
 
 const studioApi: StudioApi = {
   getPack: () => ipcRenderer.invoke(IpcChannels.getPack),
-  getStickerSourceBytes: (stickerId) => ipcRenderer.invoke(IpcChannels.getStickerSourceBytes, stickerId),
+  getStickerSource: (stickerId) => ipcRenderer.invoke(IpcChannels.getStickerSource, stickerId),
   importViaFilePicker: () => ipcRenderer.invoke(IpcChannels.importViaFilePicker),
   importViaFolderPicker: () => ipcRenderer.invoke(IpcChannels.importViaFolderPicker),
   importPaths: (paths) => ipcRenderer.invoke(IpcChannels.importPaths, paths),

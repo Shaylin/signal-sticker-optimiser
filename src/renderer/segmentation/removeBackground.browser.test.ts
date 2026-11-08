@@ -24,7 +24,7 @@ describe.runIf(integrationEnabled)("background removal integration (SEGMENTATION
     const source = await fetch("/examples/webp/29.webp");
     const input = new Blob([await source.arrayBuffer()], { type: "image/webp" });
 
-    const output = await removeBackground(input, { model: "small", assetBaseUrl });
+    const output = await removeBackground(input, { assetBaseUrl });
 
     const bytes = new Uint8Array(await output.arrayBuffer());
     expect(pngHasAlphaChannel(bytes)).toBe(true);

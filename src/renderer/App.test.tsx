@@ -32,7 +32,7 @@ function installFakeStudio(initial: PackDto): StudioApi {
   let current = initial;
   const api: StudioApi = {
     getPack: async () => current,
-    getStickerSourceBytes: async () => new ArrayBuffer(0),
+    getStickerSource: async () => ({ mimeType: "image/webp", bytes: new ArrayBuffer(0) }),
     importViaFilePicker: async () => current,
     importViaFolderPicker: async () => current,
     importPaths: async () => current,
@@ -65,6 +65,21 @@ describe("App pack grid", () => {
 
     expect(api.optimiseSticker).toHaveBeenCalledWith("st-1");
     await waitFor(() => expect(screen.getByText("254 KB").className).toBe("badge badge-ok"));
+  });
+});
+
+describe("App busy indicator", () => {
+  it("spins and blocks the pack buttons while an import is in flight", async () => {
+    const api = installFakeStudio(packWithProcessedBytes(200_000));
+    api.importViaFolderPicker = vi.fn(() => new Promise<PackDto>(() => {}));
+    render(<App />);
+    await screen.findByText("9.webm");
+
+    await userEvent.click(screen.getByRole("button", { name: "Import folder…" }));
+
+    await screen.findByText("Importing…");
+    expect((screen.getByRole("button", { name: "Import files…" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(api.importViaFolderPicker).toHaveBeenCalledOnce();
   });
 });
 

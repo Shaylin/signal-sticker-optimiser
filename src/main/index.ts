@@ -1,14 +1,13 @@
-import { app, BrowserWindow, protocol } from "electron";
+import { app, BrowserWindow } from "electron";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { registerIpcHandlers } from "./ipc/registerIpcHandlers";
 import { registerSegmentationAssetsProtocol } from "./ipc/registerSegmentationAssetsProtocol";
+import { registerSegmentationScheme } from "./ipc/registerSegmentationScheme";
 import { packStore } from "./pack/packStore";
 import { resolveFfmpegPath } from "./video/resolveFfmpegPath";
 
-protocol.registerSchemesAsPrivileged([
-  { scheme: "segmentation", privileges: { standard: true, secure: true, supportFetchAPI: true } }
-]);
+registerSegmentationScheme();
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({

@@ -6,3 +6,4 @@ out/
 dist/
 resources/
 .vitest
+examples/

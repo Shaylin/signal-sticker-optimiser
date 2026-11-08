@@ -2,6 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { corpusAvailable } from "../testing/corpusAvailable";
 import { MAX_STICKER_BYTES } from "../validation/withinByteBudget";
 import { DEFAULT_ANIMATED_SETTINGS } from "./animatedStickerSettings";
 import { fitAnimatedStickerUnderBudget } from "./fitAnimatedStickerUnderBudget";
@@ -9,6 +10,7 @@ import { runFfmpeg } from "./runFfmpeg";
 import { resolveFfmpegPath } from "./resolveFfmpegPath";
 
 const webmFixtures = join(import.meta.dirname, "../../../examples/webm");
+const webmReady = corpusAvailable(webmFixtures);
 
 let tempDir: string;
 
@@ -46,13 +48,17 @@ describe("fitAnimatedStickerUnderBudget", () => {
     expect(result.bytes.byteLength).toBeLessThanOrEqual(MAX_STICKER_BYTES);
   }, 30_000);
 
-  it("descends the ladder for the largest fixture (webm/9, far over budget at defaults)", async () => {
-    const result = await fitAnimatedStickerUnderBudget(
-      join(webmFixtures, "9.webm"),
-      join(tempDir, "9.apng"),
-      resolveFfmpegPath()
-    );
-    expect(result.rungIndex).toBeGreaterThan(0);
-    expect(result.bytes.byteLength).toBeLessThanOrEqual(MAX_STICKER_BYTES);
-  }, 120_000);
+  it.skipIf(!webmReady)(
+    "descends the ladder for the largest fixture (webm/9, far over budget at defaults)",
+    async () => {
+      const result = await fitAnimatedStickerUnderBudget(
+        join(webmFixtures, "9.webm"),
+        join(tempDir, "9.apng"),
+        resolveFfmpegPath()
+      );
+      expect(result.rungIndex).toBeGreaterThan(0);
+      expect(result.bytes.byteLength).toBeLessThanOrEqual(MAX_STICKER_BYTES);
+    },
+    120_000
+  );
 });

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { readImageStats } from "../image/readImageStats";
+import { corpusAvailable } from "../testing/corpusAvailable";
 import { isApng } from "../validation/isApng";
 import { MAX_STICKER_BYTES } from "../validation/withinByteBudget";
 import { MAX_STICKER_DIMENSION } from "../validation/withinDimensions";
@@ -19,6 +20,7 @@ const ffmpegPath = resolveFfmpegPath();
 const webpFixtures = join(import.meta.dirname, "../../../examples/webp");
 const webmFixtures = join(import.meta.dirname, "../../../examples/webm");
 const expectedFiles = ["001.webp", "002.webp", "003.apng", "004.apng"];
+const corpusReady = corpusAvailable(webpFixtures) && corpusAvailable(webmFixtures);
 
 let tempDir: string;
 let exportDir: string;
@@ -27,6 +29,9 @@ beforeAll(async () => {
   tempDir = await mkdtemp(join(tmpdir(), "export-round-trip-"));
   exportDir = join(tempDir, "exported-pack");
   packStore.configureWorkingDir(tempDir);
+  if (!corpusReady) {
+    return;
+  }
   await importPaths(
     [
       join(webpFixtures, "0.webp"),
@@ -42,13 +47,13 @@ afterAll(async () => {
   await rm(tempDir, { recursive: true, force: true });
 });
 
-describe("exportFolder with animated stickers at default settings", () => {
+describe.skipIf(!corpusReady)("exportFolder with animated stickers at default settings", () => {
   it("refuses the pack until the over-budget fixtures are optimised", async () => {
     await expect(exportFolder(packStore.state, exportDir)).rejects.toThrow(/optimise them first/);
   });
 });
 
-describe("exportFolder of an optimised pack", () => {
+describe.skipIf(!corpusReady)("exportFolder of an optimised pack", () => {
   beforeAll(async () => {
     for (const sticker of packStore.state.stickers) {
       await optimiseSticker(sticker.id, ffmpegPath);

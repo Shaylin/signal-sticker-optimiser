@@ -1,5 +1,7 @@
 import { DEFAULT_ANIMATED_SETTINGS, type AnimatedStickerSettings } from "./animatedStickerSettings";
 import { runFfmpeg } from "./runFfmpeg";
+import { sourceHasAlpha } from "./sourceHasAlpha";
+import { webmDecoderArgs } from "./webmDecoderArgs";
 
 export async function encodeAnimatedSticker(
   sourcePath: string,
@@ -7,13 +9,15 @@ export async function encodeAnimatedSticker(
   ffmpegPath: string,
   settings: AnimatedStickerSettings = DEFAULT_ANIMATED_SETTINGS
 ): Promise<void> {
+  const knockout = settings.colorkey && !(await sourceHasAlpha(sourcePath, ffmpegPath));
   await runFfmpeg(ffmpegPath, [
     "-hide_banner",
     "-y",
+    ...webmDecoderArgs(sourcePath),
     "-i",
     sourcePath,
     "-filter_complex",
-    buildPresetFilterGraph(settings),
+    buildPresetFilterGraph(settings, knockout),
     "-plays",
     "0",
     "-compression_level",
@@ -22,8 +26,8 @@ export async function encodeAnimatedSticker(
   ]);
 }
 
-function buildPresetFilterGraph(settings: AnimatedStickerSettings): string {
-  const { canvasSize, fps, maxColors, dither, colorkey, maxDurationSeconds } = settings;
+function buildPresetFilterGraph(settings: AnimatedStickerSettings, knockout: boolean): string {
+  const { canvasSize, fps, maxColors, dither, maxDurationSeconds } = settings;
   const stages = [
     `trim=duration=${maxDurationSeconds}`,
     "setpts=PTS-STARTPTS",
@@ -32,7 +36,7 @@ function buildPresetFilterGraph(settings: AnimatedStickerSettings): string {
     "unsharp=3:3:0.3:3:3:0.05",
     `fps=${fps}`
   ];
-  if (colorkey) {
+  if (knockout) {
     stages.push("colorkey=#000000:0.04:0.04");
   }
   stages.push("format=rgba");

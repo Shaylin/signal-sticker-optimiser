@@ -1,11 +1,22 @@
 import { stat } from "node:fs/promises";
 import type { StickerStats } from "../pack/stickerStats";
 import { runFfmpeg } from "./runFfmpeg";
+import { webmDecoderArgs } from "./webmDecoderArgs";
 
 export async function probeStats(filePath: string, ffmpegPath: string): Promise<StickerStats> {
   const [fileStat, result] = await Promise.all([
     stat(filePath),
-    runFfmpeg(ffmpegPath, ["-hide_banner", "-i", filePath, "-map", "0:v:0", "-f", "null", "-"])
+    runFfmpeg(ffmpegPath, [
+      "-hide_banner",
+      ...webmDecoderArgs(filePath),
+      "-i",
+      filePath,
+      "-map",
+      "0:v:0",
+      "-f",
+      "null",
+      "-"
+    ])
   ]);
   const frames = parseFrameCount(result.stderr);
   return {
@@ -13,7 +24,7 @@ export async function probeStats(filePath: string, ffmpegPath: string): Promise<
     ...parseVideoStream(result.stderr),
     durationSeconds: parseDuration(result.stderr) ?? parseFinalTime(result.stderr),
     animated: frames > 1,
-    hasAlpha: /Video:[^\n]*yuva/.test(result.stderr)
+    hasAlpha: /Video:[^\n]*(yuva|rgba|argb|abgr|gbrap)/.test(result.stderr)
   };
 }
 

@@ -3,9 +3,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { corpusAvailable } from "../testing/corpusAvailable";
 import { readImageStats } from "./readImageStats";
 
 const webpFixtures = join(import.meta.dirname, "../../../examples/webp");
+const webpReady = corpusAvailable(webpFixtures);
 
 let tempDir: string;
 
@@ -18,7 +20,7 @@ afterAll(async () => {
 });
 
 describe("readImageStats", () => {
-  it("matches the recorded expectations for the webp corpus (512x443 single-frame)", async () => {
+  it.skipIf(!webpReady)("matches the recorded expectations for the webp corpus (512x443 single-frame)", async () => {
     const stats = await readImageStats(join(webpFixtures, "0.webp"));
     expect(stats.width).toBe(512);
     expect(stats.height).toBe(443);

@@ -7,33 +7,26 @@ vi.mock("@imgly/background-removal", () => ({
 
 const removeMock = (await import("@imgly/background-removal")).removeBackground as ReturnType<typeof vi.fn>;
 
+function lastConfig(): { model: string; publicPath: string } {
+  return removeMock.mock.calls[removeMock.mock.calls.length - 1][1];
+}
+
 describe("removeBackground", () => {
   it("returns the segmented png blob from the library", async () => {
     const result = await removeBackground(new Blob(["input"], { type: "image/webp" }), {
-      model: "small",
       assetBaseUrl: "https://localhost/assets/"
     });
     expect(result.type).toBe("image/png");
   });
 
-  it("passes the small model and asset base url to the library", async () => {
-    await removeBackground(new Blob(["input"], { type: "image/webp" }), {
-      model: "small",
-      assetBaseUrl: "https://localhost/assets/"
-    });
-    const config = removeMock.mock.calls[removeMock.mock.calls.length - 1][1];
-    expect(config).toMatchObject({ model: "isnet_quint8", publicPath: "https://localhost/assets/" });
-  });
-
-  it("maps the medium model to the fp16 onnx model", async () => {
-    await removeBackground(new Blob(["input"]), { model: "medium", assetBaseUrl: "https://localhost/assets/" });
-    const config = removeMock.mock.calls[removeMock.mock.calls.length - 1][1];
-    expect(config.model).toBe("isnet_fp16");
+  it("uses the quantized isnet model served from the local asset url", async () => {
+    await removeBackground(new Blob(["input"]), { assetBaseUrl: "https://localhost/assets/" });
+    expect(lastConfig()).toMatchObject({ model: "isnet_quint8", publicPath: "https://localhost/assets/" });
   });
 
   it("propagates library failures to the caller", async () => {
     removeMock.mockRejectedValueOnce(new Error("model download failed"));
-    await expect(removeBackground(new Blob(["input"]), { model: "small", assetBaseUrl: "x/" })).rejects.toThrow(
+    await expect(removeBackground(new Blob(["input"]), { assetBaseUrl: "x/" })).rejects.toThrow(
       "model download failed"
     );
   });

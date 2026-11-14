@@ -1,12 +1,13 @@
-import { stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import sharp from "sharp";
 import type { StickerStats } from "../pack/stickerStats";
 
 export async function readImageStats(filePath: string): Promise<StickerStats> {
-  const [fileStat, metadata] = await Promise.all([stat(filePath), sharp(filePath).metadata()]);
+  const bytes = await readFile(filePath);
+  const metadata = await sharp(bytes).metadata();
   const pages = metadata.pages ?? 1;
   return {
-    byteSize: fileStat.size,
+    byteSize: bytes.byteLength,
     width: metadata.width ?? 0,
     height: metadata.height ?? 0,
     durationSeconds: 0,

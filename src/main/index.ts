@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from "electron";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
+import sharp from "sharp";
 import { registerIpcHandlers } from "./ipc/registerIpcHandlers";
 import { registerSegmentationAssetsProtocol } from "./ipc/registerSegmentationAssetsProtocol";
 import { registerSegmentationScheme } from "./ipc/registerSegmentationScheme";
@@ -8,6 +9,8 @@ import { packStore } from "./pack/packStore";
 import { resolveFfmpegPath } from "./video/resolveFfmpegPath";
 
 registerSegmentationScheme();
+
+sharp.cache(false);
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
